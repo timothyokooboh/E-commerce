@@ -1,10 +1,13 @@
 <template>
+  <!-- Since Vuetify is installed, the entire content of the application must be wrapped inside the v-app compoenent. -->
   <v-app>
-
+    <!-- Use the Navigation component so that it appears across all pages -->
     <Navigation />
 
-    <v-main>
-      <router-view />
+    <!-- Since vuetify is installed, our routes will work by simply wrapping the router-view component inside the v-main component -->
+
+    <v-main> 
+      <router-view></router-view>
     </v-main>
   </v-app>
 </template>
@@ -23,6 +26,15 @@ export default Vue.extend({
   data: () => ({
     //
   }),
+
+   created() {
+    this.$store.dispatch('aAutoLogin')
+
+    // if(this.$store.state.userToken !== "") {
+    //   this.$store.state.isAuth = true
+    // }
+  
+  }
 });
 </script>
 

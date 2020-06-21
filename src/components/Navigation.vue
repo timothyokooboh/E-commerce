@@ -5,8 +5,8 @@
             <v-app-bar-nav-icon color="#fff" @click = "drawer =! drawer"> </v-app-bar-nav-icon>
 
             <v-toolbar-title class = "font-weight-bold" color>
-                <v-btn text color="#fff">
-                    BUY-hub
+                <v-btn text >
+                    <router-link to="/" class="white--text">BUY-HUB</router-link>
                 </v-btn>
             </v-toolbar-title>
 
@@ -21,10 +21,26 @@
                 </template>
                 <div> View Cart </div>
             </v-tooltip>
+
+            <v-btn text color = "#fff"  @click = "logout" v-show="$store.state.isAuth"> 
+                <v-icon left>mdi-logout</v-icon>
+                <span>Logout</span>
+            </v-btn>
             
         </v-app-bar>
 
-        <v-navigation-drawer app disable-resize-watcher v-model = "drawer" color="#241663"></v-navigation-drawer>
+        <v-navigation-drawer app disable-resize-watcher v-model = "drawer" color="#241663">
+            <v-list>
+                <v-list-item @click="logout" v-show="$store.state.isAuth">
+                    <v-list-item-icon>
+                        <v-icon color="#fff">mdi-logout</v-icon>
+                    </v-list-item-icon>
+                    <v-list-item-content>
+                        <v-list-item-title class="white--text">Logout</v-list-item-title>
+                    </v-list-item-content>
+                </v-list-item>
+            </v-list>
+        </v-navigation-drawer>
     </div>
 </template>
 
@@ -38,6 +54,17 @@ export default {
   },
   components: {
     
+  },
+  methods: {
+      logout() {
+          this.$store.dispatch("aLogOut")
+      }
   }
 }
 </script>
+
+<style scoped>
+    a {
+        text-decoration: none;
+    }
+</style>
