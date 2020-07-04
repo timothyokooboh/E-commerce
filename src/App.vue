@@ -29,11 +29,9 @@ export default Vue.extend({
 
    created() {
     this.$store.dispatch('aAutoLogin')
-
-    // if(this.$store.state.userToken !== "") {
-    //   this.$store.state.isAuth = true
-    // }
-  
+    this.$store.dispatch('aSetTheme')
+    this.$store.dispatch('aGetCartTokens')
+    this.$store.dispatch('aGetCartItems')
   }
 });
 </script>
@@ -42,17 +40,30 @@ export default Vue.extend({
 
   :root {
     --primary-color: #160f30;
-    --secondary-color: #241663;
+    --secondary-color: #3787D6;
     --tertiary-color: #a72693;
     --flavored-color: #eae7af;
+    --theme-color: #F5F5F5;
   }
+
+  * {
+    letter-spacing: 1.08px;
+    box-sizing: border-box;
+  }
+
   body::-webkit-scrollbar {
     overflow-y: scroll;
     display: none;
 
   }
+
   body {
     -ms-overflow-style: none;
+  }
+
+  .v-main__wrap {
+    background-color: var(--theme-color);
+    color: var(--primary-color);
   }
   
 </style>

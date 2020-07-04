@@ -21,6 +21,15 @@ Vue.use(VueRouter)
   },
 
   {
+    path: '/product/cart',
+    name: 'Cart',
+    // route level code-splitting
+    // this generates a separate chunk (Cart.[hash].js) for this route
+    // which is lazy-loaded when the route is visited.
+    component: () => import(/* webpackChunkName: "Cart" */ '../views/Cart.vue')
+  },
+  
+  {
     path: '/auth/user/register',
     name: 'Register',
     // route level code-splitting
@@ -53,6 +62,24 @@ Vue.use(VueRouter)
         next('/auth/user/login')
       }
     }
+  },
+
+  {
+    path: '/product/:id',
+    name: 'Product',
+    // route level code-splitting
+    // this generates a separate chunk (Product.[hash].js) for this route
+    // which is lazy-loaded when the route is visited.
+    component: () => import(/* webpackChunkName: "Product" */ '../views/Product.vue')
+  },
+
+  {
+    path: '/order/update/:id',
+    name: 'UpdateOrder',
+    // route level code-splitting
+    // this generates a separate chunk (Product.[hash].js) for this route
+    // which is lazy-loaded when the route is visited.
+    component: () => import(/* webpackChunkName: "UpdateOrder" */ '../views/UpdateOrder.vue')
   },
 
 ]

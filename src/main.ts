@@ -7,6 +7,17 @@ import vuetify from './plugins/vuetify';
 
 Vue.config.productionTip = false
 
+Vue.directive("textAlign", {
+  bind(el: any, binding: any) {
+    el.style.textAlign = binding.value
+  }
+})
+Vue.directive("textColor", {
+  bind(el: any, binding: any) {
+    el.style.color = binding.value
+  }
+})
+
 new Vue({
   router,
   store,

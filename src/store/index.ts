@@ -2,6 +2,7 @@ import Vue from 'vue'
 import Vuex from 'vuex'
 import axios from "axios"
 import router from '../router'
+import ProductDataService from "../services/ProductDataService"
 
 Vue.use(Vuex)
 
@@ -10,23 +11,33 @@ export default new Vuex.Store({
     email: "",
     password: "",
     userToken: "",
+    cartTokens: [],
+    cart: [],
+    searchBar: false,
     isAuth: false,
     successSnackbar: false,
     errorSnackbar: false,
     loadingContent: false,
+    products: [],
+    items: [],
+    productsCategory: [],
+    searchTerm: "",
+    skeletonLoader: true,
+    cartSnackbar: false,
+    bgColor: "",
+    errorMessage: ""
   },
 
   mutations: {
     mSignUp(state) {
 
       state.loadingContent = true
+
      // create object for holding our data
       const data = {
         email: state.email,
         password: state.password,
       }
-     
-      console.log(data)
      
       axios.post("http://localhost:3000/api/user/register", data)
       .then((res) => {
@@ -38,6 +49,7 @@ export default new Vuex.Store({
         console.log(err)
         state.loadingContent = false
         state.errorSnackbar = true
+        state.errorMessage = err
       })
     },
 
@@ -69,23 +81,24 @@ export default new Vuex.Store({
         localStorage.setItem("expirationDate", expirationDate)
         localStorage.setItem("isAuth", auth)
 
-
          /**
          * The userToken expires after one hour. The callback function logs out the user automatically after the token has expired.
          */
         setTimeout(() => {
           state.userToken = "";
           state.isAuth = false
+          localStorage.removeItem("token")
+          localStorage.removeItem("expirationDate")
+          localStorage.removeItem("isAuth")
           router.replace('/auth/user/login')
         }, 3600000);
-
-
 
       })
       .catch((err) => {
         console.log(err)
         state.errorSnackbar = true
         state.loadingContent = false
+        state.errorMessage = err
       })
     },
 
@@ -124,6 +137,83 @@ export default new Vuex.Store({
       localStorage.removeItem("expirationDate")
       localStorage.removeItem("isAuth")
       router.replace("/auth/user/login")
+    },
+
+    mOpenSearch(state) {
+      state.searchBar = true
+    },
+
+    mThemeMode(state) {
+      const bgColor: string = document.documentElement.style.getPropertyValue("--primary-color")
+
+      if (bgColor === "#F5F5F5") {
+        document.documentElement.style.setProperty("--primary-color", "#160f30")
+        document.documentElement.style.setProperty("--theme-color", "#F5F5F5")
+        state.bgColor = "#160f30"
+
+        localStorage.setItem("bgColor", "#160f30")
+        localStorage.setItem("textColor", "#F5F5F5")
+      } else {
+        document.documentElement.style.setProperty("--primary-color", "#F5F5F5")
+        document.documentElement.style.setProperty("--theme-color", "#160f30")
+        state.bgColor = "#F5F5F5"
+
+        localStorage.setItem("bgColor", "#F5F5F5")
+        localStorage.setItem("textColor", "#160f30")
+      }
+    
+    },
+
+    mSetTheme() {
+      const bgColor = localStorage.getItem("bgColor")
+      const textColor = localStorage.getItem("textColor")
+
+      document.documentElement.style.setProperty("--primary-color", bgColor)
+      document.documentElement.style.setProperty("--theme-color", textColor)
+
+    },
+
+    mFetchProducts(state) {
+      state.skeletonLoader = true
+      ProductDataService.fetchAll(state.searchTerm)
+      .then((res: any) => {
+        console.log(res.data)
+        state.skeletonLoader = false
+        state.products = res.data
+        state.products.map((val) => {
+          // create array of categories
+          state.items.push(val.details.category)
+        })
+        //create array of unique categories
+        state.productsCategory = Array.from(new Set(state.items))
+
+      })
+      .catch((err: any) => {
+        console.log(err)
+        state.skeletonLoader = false
+      })
+    },
+
+    mGetCartTokens(state) {
+      const cartTokens = JSON.parse(localStorage.getItem("cartTokens"))
+
+      if(cartTokens !== null) {
+        state.cartTokens = cartTokens
+      }
+
+    },
+
+    mGetCartItems(state) {
+      state.cartTokens.map((val) => {
+        ProductDataService.fetchOne(val)
+        .then((res: any) => {
+          state.cart.push(res.data)
+          console.log(state.cart)
+        })
+        .catch((err: any) => {
+          console.log(err)
+        })
+      })
     }
 
   },
@@ -141,6 +231,24 @@ export default new Vuex.Store({
     },
     aLogOut({commit}) {
       commit("mLogOut")
+    },
+    aOpenSearch({commit}) {
+      commit("mOpenSearch")
+    },
+    aThemeMode({commit}) {
+      commit("mThemeMode")
+    },
+    aSetTheme({commit}) {
+      commit("mSetTheme")
+    },
+    aFetchProducts({commit}) {
+      commit("mFetchProducts")
+    },
+    aGetCartTokens({commit}) {
+      commit("mGetCartTokens")
+    },
+    aGetCartItems({commit}) {
+      commit("mGetCartItems")
     }
 
   },

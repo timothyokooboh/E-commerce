@@ -1,12 +1,14 @@
 <template>
-    <div class="register">
+    <div>
         <v-container>
 
             <v-snackbar top :timeout="4000" v-model="errorSnackbar" color="#a72693" class="white--text">
                 Username or Password is invalid
             </v-snackbar>
 
-            <v-card>
+            <v-card :elevation="5">
+
+                <div> {{$store.state.errorMessage}} </div>
                 
                 <v-card-title class="my-5"> Login </v-card-title>
 
@@ -103,18 +105,12 @@ export default {
        submit(e) {
            if(this.$refs.form.validate()) {
                this.$store.dispatch("aLogin")
-               return true
            }
-           e.preventDefault()
        }
     }
 }
 </script>
 
 <style scoped>
-    .register {
-        width: 100%;
-        height: 100%;
-        background: var(--primary-color)
-    }
+    
 </style>

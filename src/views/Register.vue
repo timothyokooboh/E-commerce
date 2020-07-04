@@ -1,5 +1,5 @@
 <template>
-    <div class="register">
+    <div>
         <v-container>
             <v-snackbar top :timeout="4000" v-model="successSnackbar" color="#a72693" class="white--text">
                 Sign up was successful
@@ -9,9 +9,12 @@
                 Something went wrong. Try again
             </v-snackbar>
 
-            <v-card>
+            <v-card :elevation="5">
 
-                <v-card-title class="my-5"> Create Account </v-card-title>
+
+            <div class="pa-5"> {{$store.state.errorMessage}} </div>
+
+                <v-card-title class="my-5"> Create Accountss </v-card-title>
 
                 <v-form ref="form" class="mx-5">
                     <v-text-field
@@ -108,22 +111,15 @@ export default {
     methods: {
        submit(e) {
            if(this.$refs.form.validate()) {
+
                this.$store.dispatch("aSignUp")
                
-               return true
            }
-
-           // prevent form submission if validation fails
-           e.preventDefault()
        }
     }
 }
 </script>
 
 <style scoped>
-    .register {
-        width: 100%;
-        height: 100%;
-        background: var(--primary-color)
-    }
+    
 </style>
