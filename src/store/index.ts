@@ -25,7 +25,9 @@ export default new Vuex.Store({
     skeletonLoader: true,
     cartSnackbar: false,
     bgColor: "",
-    errorMessage: ""
+    placeOrderDialog: false,
+    isLoading: false,
+    searchStatus: false,
   },
 
   mutations: {
@@ -49,7 +51,6 @@ export default new Vuex.Store({
         console.log(err)
         state.loadingContent = false
         state.errorSnackbar = true
-        state.errorMessage = err
       })
     },
 
@@ -98,17 +99,16 @@ export default new Vuex.Store({
         console.log(err)
         state.errorSnackbar = true
         state.loadingContent = false
-        state.errorMessage = err
       })
     },
 
     // Login user automatically if token is in local storage and has not expired
     mAutoLogin(state) {
-      const token = localStorage.getItem('token')
+      const token: any = localStorage.getItem('token')
       const auth: any = localStorage.getItem('isAuth')
 
       // check if token exists
-      if(!token) {
+      if(token === "") {
         return
       }
 
@@ -125,8 +125,6 @@ export default new Vuex.Store({
       state.userToken = token
       state.isAuth = auth
       
-      // redirect to dashboard
-      router.replace('/auth/user/dashboard')
     },
 
     mLogOut(state) {
@@ -174,12 +172,17 @@ export default new Vuex.Store({
     },
 
     mFetchProducts(state) {
-      state.skeletonLoader = true
+      state.isLoading = true
       ProductDataService.fetchAll(state.searchTerm)
       .then((res: any) => {
-        console.log(res.data)
-        state.skeletonLoader = false
+        state.isLoading = false
         state.products = res.data
+
+        if(state.products.length === 0) {
+          state.searchStatus = true
+        } else {
+          state.searchStatus = false
+        }
         state.products.map((val) => {
           // create array of categories
           state.items.push(val.details.category)
@@ -189,8 +192,8 @@ export default new Vuex.Store({
 
       })
       .catch((err: any) => {
-        console.log(err)
-        state.skeletonLoader = false
+        state.isLoading = false
+        state.errorSnackbar = true
       })
     },
 
@@ -204,14 +207,16 @@ export default new Vuex.Store({
     },
 
     mGetCartItems(state) {
+      state.isLoading = true
       state.cartTokens.map((val) => {
         ProductDataService.fetchOne(val)
         .then((res: any) => {
           state.cart.push(res.data)
-          console.log(state.cart)
+          state.isLoading = false
         })
         .catch((err: any) => {
-          console.log(err)
+
+          state.isLoading = false
         })
       })
     }

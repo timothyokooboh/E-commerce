@@ -1,12 +1,17 @@
 <template>
     <div>
+        <!-- top app bar -->
         <v-app-bar app flat color="#FFFFFF">
 
-            <v-app-bar-nav-icon color="#3787D6" @click = "drawer =! drawer"> </v-app-bar-nav-icon>
-
             <v-toolbar-title class = "font-weight-bold" color>
-                <v-btn text >
+                <v-btn text class="hidden-sm-and-down">
                     <router-link to="/" class="#3787D6--text">BUY-HUB</router-link>
+                </v-btn>
+
+                <v-btn text class="hidden-md-and-up">
+                    <router-link to="/" class="#3787D6--text">
+                        <v-icon>mdi-home</v-icon>
+                    </router-link>
                 </v-btn>
             </v-toolbar-title>
 
@@ -18,7 +23,7 @@
 
                 <template v-slot:activator="{on}">
                     <v-btn text color="#3787D6" v-on="on">
-                        <span class="hidden-xs-only">FILTER</span>
+                        <span>FILTER</span>
                         <v-icon>mdi-menu-down</v-icon>
                     </v-btn>
                 </template>
@@ -90,12 +95,11 @@
             <v-tooltip bottom color="#e14594" >
 
                 <template v-slot:activator="{on}">
-                    <router-link to="/product/cart">
-                        <v-btn text color="#3787D6" v-on="on">
-                            <span class="mr-2 hidden-xs-only"> Cart </span>
-                            <v-icon>mdi-cart</v-icon>
-                        </v-btn>
-                    </router-link>
+                    <v-btn text color="#3787D6" v-on="on" @click="cartRoute()">
+                        <span class="mr-2 hidden-xs-only"> Cart </span>
+                        <v-icon>mdi-cart</v-icon>
+                    </v-btn>
+                        
                 </template>
 
                 <div> View Cart </div>
@@ -106,6 +110,36 @@
                 <v-icon left>mdi-logout</v-icon>
                 <span>Logout</span>
             </v-btn>
+            
+        </v-app-bar>
+
+        <!--bottom app bar -->
+
+        <v-app-bar app flat color="#FFFFFF" bottom>
+
+             <router-link to = "/about" class="hidden-sm-and-down">
+                <v-btn text color = "#3787D6"> 
+                    <v-icon left>mdi-information</v-icon>
+                    <span>About</span>
+                </v-btn>
+            </router-link>
+
+            <v-btn text color = "#3787D6" class="hidden-sm-and-down"> 
+                <v-icon left>mdi-account-circle</v-icon>
+                <span><a href="https://timothyokooboh.github.io/portfolio" target="_blank">Develover</a></span>
+            </v-btn>
+
+            <a href="timothyokooboh.github.io/portfolio" target="_blank" id="portfolio"></a>
+
+            <v-app-bar-nav-icon color="#3787D6" @click = "drawer =! drawer" class="hidden-md-and-up"> </v-app-bar-nav-icon>
+
+             <v-toolbar-title class = "font-weight-bold" color>
+                <v-btn text class="hidden-md-and-up">
+                    <router-link to="/" class="#3787D6--text">BUY-HUB</router-link>
+                </v-btn>
+            </v-toolbar-title>
+
+            <v-spacer></v-spacer>
 
             <v-tooltip bottom color="#e14594" >
                 <template v-slot:activator="{on}">
@@ -116,8 +150,9 @@
             
         </v-app-bar>
 
-        <v-navigation-drawer app disable-resize-watcher v-model = "drawer" color="#241663">
+        <v-navigation-drawer app disable-resize-watcher v-model = "drawer" color="#3787D6" class="hidden-md-and-up">
             <v-list>
+
                 <v-list-item @click="logout" v-show="$store.state.isAuth">
                     <v-list-item-icon>
                         <v-icon color="#fff">mdi-logout</v-icon>
@@ -126,6 +161,34 @@
                         <v-list-item-title class="white--text">Logout</v-list-item-title>
                     </v-list-item-content>
                 </v-list-item>
+
+                <v-list-item @click="$router.push('/auth/user/dashboard')" v-show="$store.state.isAuth">
+                    <v-list-item-icon>
+                        <v-icon color="#fff">mdi-view-dashboard</v-icon>
+                    </v-list-item-icon>
+                    <v-list-item-content>
+                        <v-list-item-title class="white--text">Dashboard</v-list-item-title>
+                    </v-list-item-content>
+                </v-list-item>
+
+                <v-list-item @click="$router.push('/about')">
+                    <v-list-item-icon>
+                        <v-icon color="#fff">mdi-information</v-icon>
+                    </v-list-item-icon>
+                    <v-list-item-content>
+                        <v-list-item-title class="white--text">About</v-list-item-title>
+                    </v-list-item-content>
+                </v-list-item>
+
+                <v-list-item>
+                    <v-list-item-icon>
+                        <v-icon color="#fff">mdi-account-circle</v-icon>
+                    </v-list-item-icon>
+                    <v-list-item-content>
+                        <a href="https://timothyokooboh.github.io/portfolio" target="_blank" class="white--text">Developer</a>
+                    </v-list-item-content>
+                </v-list-item>
+
             </v-list>
         </v-navigation-drawer>
 
@@ -157,6 +220,7 @@ export default {
     },
     openSearch() {
         this.$store.dispatch("aOpenSearch")
+        window.scrollTo(0, 0)
     },
     changeTheme() {
         this.$store.dispatch("aThemeMode")
@@ -209,6 +273,7 @@ export default {
             this.$store.state.skeletonLoader = false
         })
     },
+
     getByCategory(item) {
         this.$store.state.skeletonLoader = true
         ProductDataService.getProductsByCategory(item)
@@ -220,18 +285,28 @@ export default {
             console.log(err)
             this.$store.state.skeletonLoader = false
         })
+    },
+
+    cartRoute() {
+        this.$router.push("/products/cart", () => {
+            // on complete, refresh the cart page to display the updated cart
+            this.$router.go(0)
+        })
+
+    }
+
+  },
+  
+  watch: {
+    priceGreater() {
+        if(this.priceGreater > 0)
+        setTimeout(this.getByPriceGreaterThan(), 3000)
+    },
+    priceLesser() {
+        if(this.priceLesser > 0)
+        setTimeout(this.getByPriceLessThan(), 3000)
     }
   },
-  watch: {
-      priceGreater() {
-          if(this.priceGreater > 0)
-        setTimeout(this.getByPriceGreaterThan(), 3000)
-      },
-      priceLesser() {
-          if(this.priceLesser > 0)
-          setTimeout(this.getByPriceLessThan(), 3000)
-      }
-  }
 
 }
 </script>

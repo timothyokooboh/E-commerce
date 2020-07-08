@@ -1,5 +1,27 @@
 <template>
     <div>
+
+        <v-sheet
+            color="`grey"
+            class="px-3 pt-3 pb-3"
+            v-if = "$store.state.isLoading"
+        >
+
+            <div class="loader-container">
+
+                <div v-for = "n in 5" :key="n">
+                    <v-skeleton-loader
+                    class="mx-auto"
+                    type="card-avatar"
+                    width = "200"
+                    >
+                    </v-skeleton-loader>
+                </div>
+      
+            </div>
+      
+        </v-sheet>
+
         <v-snackbar v-model="$store.state.cartSnackbar" top :timeout="4000" width="100%">
             Item added to cart
         </v-snackbar>
@@ -12,11 +34,104 @@
             Your review has been submitted
         </v-snackbar>
 
+        <v-snackbar v-model="updateSnackbar" top :timeout="8000" width="100%">
+            Product has been updated successfully
+        </v-snackbar>
+
+        <v-snackbar v-model="errorSnackbar" top :timeout="8000" width="100%">
+            Please try again. Something went wrong.
+        </v-snackbar>
+
+
         <div class="product-grid-container ma-5">
 
             <div>
-                <img :src="product.details.imageSrc" class="product-image" id="image">
+                <div>
+                    <img :src="product.details.imageSrc" class="product-image" id="image">
+                </div>
+                
+                <div  class="flex-sub-items mt-5" v-if = "$store.state.isAuth" >
+
+                     <v-dialog v-model = "updateDialog"> 
+                        <template v-slot:activator="{on}">
+                            <v-icon v-on="on" @click = "updateDialog =! updateDialog" :color="buttonColor">mdi-pencil</v-icon>
+                        </template>
+
+                        <v-card>
+                            <h3 class="px-5 py-2">UPDATE PRODUCT</h3>
+                            <v-form ref="updateForm" class="ma-5 py-3">
+                                <v-text-field
+                                    v-model="updateProductName"
+                                    label = "Product name"
+                                    :rules="storeRules"
+                                >
+                                </v-text-field>
+                                <v-text-field
+                                    v-model="updateProductPrice"
+                                    label = "Price"
+                                    :rules="storeNumberRules"
+                                    prepend-icon="mdi-currency-ngn"
+                                >
+                                </v-text-field>
+                                <v-text-field
+                                    v-model="updateQuantity"
+                                    label = "Quantity"
+                                    :rules="storeNumberRules"
+                                >
+                                </v-text-field>
+                                <v-text-field
+                                    v-model="updateProductCategory"
+                                    label = "Category"
+                                    :rules="storeRules"
+                                >
+                                </v-text-field>
+                                <v-text-field
+                                    v-model="updateProductDescription"
+                                    label = "Description"
+                                    :rules="storeRules"
+                                >
+                                </v-text-field>
+                                <v-select
+                                    label="Select Delivery Mode"
+                                    v-model="updateProductShipping"
+                                    :items="updateItems"
+                                    :rules="storeRules"
+                                 >
+                                </v-select>
+
+                                <v-text-field
+                                    label="Delivery Fee"
+                                    v-model="updateProductShippingFee"
+                                    type="number"
+                                    v-if="updateProductShipping !== 'Free' "
+                                    prepend-icon="mdi-currency-ngn"
+                                    :rules="storeNumberRules"
+                                >
+                                </v-text-field>
+
+                                <v-file-input 
+                                    label="Upload product image"
+                                    type="file"
+                                    @change="handleFileUpload"
+                                    ref="file"
+                                    id="file"
+                                >
+                                </v-file-input>
+
+                                <v-btn @click="update" width = "100%" color="#a72693" class = "my-5 white--text" :loading = "loadingContent"> Update Product </v-btn>
+
+                            </v-form>
+                        </v-card>
+
+                     </v-dialog>
+
+                    <div @click = "deleteItem" >
+                        <v-icon style = "cursor: pointer" :color="buttonColor" >mdi-trash-can-outline</v-icon>
+                    </div>
+
+                </div>
             </div>
+                
 
             <div>
 
@@ -29,8 +144,8 @@
                     <span class="body-2 px-2"> {{getAverageReviews}} </span>
                 </div>
 
-                <div class="py-3 title">Price: <v-icon>mdi-currency-ngn</v-icon> {{product.details.price}}</div>
-                <div class="py-3 font-weight-bold">Shipping: <v-icon small>mdi-currency-ngn</v-icon> {{product.delivery.shippingFee}}</div>
+                <div class="py-3 title font-weight-bold">Price: <v-icon :color="buttonColor" >mdi-currency-ngn</v-icon> {{product.details.price}}</div>
+                <div class="py-3 font-weight-bold">Shipping fee: <v-icon small :color="buttonColor" >mdi-currency-ngn</v-icon> {{product.delivery.shippingFee}}</div>
                 <div class="py-3 font-weight-bold">Available quantity: {{product.details.quantity}}</div>
 
                 <div class="flex-actions my-5 mr-2">
@@ -40,13 +155,17 @@
 
                             <template v-slot:activator="{on}">
                                 <v-btn color="#3787D6" class="white--text" v-on="on" @click="dialog =! dialog">
-                                    <v-icon left>mdi-cash</v-icon>
+                                    <v-icon left :color="buttonColor">mdi-cash</v-icon>
                                     <span>Place order</span>
                                 </v-btn>
                             </template>
 
                             <v-card>
                                 <v-form ref="form" class="mx-5 my-5">
+                                    <div class="py-3 text-center body-2"> 
+                                        <v-icon class="mx-2">mdi-hand-pointing-right</v-icon>
+                                        <span>YOU PAY ON DELIVERY</span>
+                                    </div>
                                     <div class="title text-center py-2">PLEASE PROVIDE YOUR CONTACT DETAILS</div>
                                     <v-text-field
                                         label="First Name"
@@ -102,7 +221,7 @@
                                     </v-text-field>
 
                                     <v-text-field
-                                        label = "Specify Quantity"
+                                        label = "Choose Quantity"
                                         type = "number"
                                         v-model = "orderDetails.productDetails.quantity"
                                         :rules = "quantityRules"
@@ -142,7 +261,7 @@
                     </div>
 
                     <div>
-                        <v-btn outlined color="#3787D6" @click="addToCart">
+                        <v-btn outlined :color="buttonColor" @click="addToCart">
                             <v-icon left>mdi-cart</v-icon>
                             <span>Add to cart</span>
                         </v-btn>
@@ -153,14 +272,14 @@
                     
                     <span class="font-weight-bold body-2"> USED THIS PRODUCT? </span>
 
-                    <v-dialog>
+                    <v-dialog v-model="reviewDialog">
 
                         <template v-slot:activator="{on}">
 
-                            <v-btn text v-on="on">
+                            <v-btn text v-on="on" @click="reviewDialog =! reviewDialog" :color="buttonColor">
                                 <v-icon left>mdi-pencil</v-icon>
-                                <span class="font-weight-bold"> Add a review </span>
-                            </v-btn>
+                                <span class="font-weight-bold" v-on="on" @click="reviewDialog =! reviewDialog"> Add a review </span>
+                           </v-btn>
 
                         </template>
 
@@ -173,6 +292,7 @@
                                 <v-text-field
                                     label = "Your name"
                                     append-icon="mdi-account-outline"
+                                    :color="buttonColor"
                                     v-model = "reviewerName"
                                     :rules = "reviewRules"
                                 >
@@ -182,6 +302,7 @@
                                     label = "Your location (optional)"
                                     append-icon="mdi-map-marker"
                                     v-model = "reviewerLocation"
+                                    :color="buttonColor"
                                 >
                                 </v-text-field>
                                 
@@ -257,26 +378,27 @@
 
         <div class="flex-products" >
         <v-card v-for="(product, index) in relatedProducts" :key="index" width="235" class="flex-product-items">
-          <div class="title py-3" v-textAlign="'center'" v-textColor="'#3787D6'">{{product.details.productName}}</div>
-          <v-avatar tile width="100%" height="225">
-            <img :src="product.details.imageSrc" class="product-images">
-          </v-avatar>
-          <v-divider></v-divider>
-          <v-card-text>
-            <div class="flex-sub-items mb-2">
-              <div>
-                <v-icon small> mdi-currency-ngn </v-icon>
-                <span> {{product.details.price}} </span>
-              </div>
-              <div>quantity: {{product.details.quantity}}</div>
+
+            <div @click="viewProduct(product._id)" style = "cursor: pointer">
+
+                <div class="title py-3" v-textAlign="'center'" v-textColor="'#3787D6'">{{product.details.productName}}</div>
+                <v-avatar tile width="100%" height="225">
+                    <img :src="product.details.imageSrc" class="product-images">
+                </v-avatar>
+                <v-divider></v-divider>
+                <v-card-text>
+                    <div class="flex-sub-items mb-2">
+                    <div>
+                        <v-icon small> mdi-currency-ngn </v-icon>
+                        <span> {{product.details.price}} </span>
+                    </div>
+                    <div>quantity: {{product.details.quantity}}</div>
+                    </div>
+                    <div  class="flex-sub-items">
+                    <div> Delivery: <span class="text-uppercase"> {{product.delivery.shipping}}</span> </div>
+                    </div>
+                </v-card-text>
             </div>
-            <div  class="flex-sub-items">
-              <div> Delivery: <span class="text-uppercase"> {{product.delivery.shipping}}</span> </div>
-              <div>
-                <v-btn outlined x-small @click="$router.push(`/product/${product._id}`)">See datails</v-btn>
-              </div>
-            </div>
-          </v-card-text>
         </v-card>
       </div>
 
@@ -292,6 +414,7 @@ export default {
     
     data() {
         return {
+          
             product: [],
             category: "",
             relatedProducts: [],
@@ -324,7 +447,7 @@ export default {
             ],
             emailRules: [
                 v => !!v || "Email is required",
-                v => /.+@.+\..+/.test(v) || 'E-mail must be valid'
+                v => /.+@.+\..+/.test(v) || 'E-mail must be a valid email address'
             ],
             reviewRules: [
                 v => !!v || "This field is required"
@@ -336,12 +459,37 @@ export default {
             reviewerName: "",
             reviewerLocation: "",
             reviewerRating: "",
-            reviewerComment: ""
+            reviewerComment: "",
+            reviewDialog: false,
+
+            updateProductName: "",
+            updateQuantity: "",
+            updateProductPrice: "",
+            updateProductDescription: "",
+            updateProductCategory: "",
+            updateProductShipping: "",
+            updateProductShippingFee: "",
+            updateItems: ["Free", "Paid"],
+            updateSnackbar: false,
+            file: "",
+            storeRules: [
+                v => !!v || "This field is required"
+            ],
+            storeNumberRules: [
+                v => !!v || "This field is required",
+                v => v > 0 || "Value must be greater than zero"
+            ],
+            updateDialog: false,
+            errorSnackbar: false
         }
     },
     computed: {
         buttonColor() {
-            return this.$store.state.bgColor !== "#160f30" ? "#F5F5F5" : "#3787D6" 
+            const buttonColor = this.$store.state.bgColor === "#F5F5F5" ?  "#F5F5F5" : "#160f30"
+
+            return buttonColor
+            
+            //localStorage.setItem("buttonColor", buttonColor)
         },
         routeParams() {
             return this.$route.params.id
@@ -378,6 +526,7 @@ export default {
     },
 
     watch: {
+
         routeParams() {
             ProductDataService.fetchOne(this.routeParams)
             .then((res) => {
@@ -390,19 +539,65 @@ export default {
                 console.log(err)
             })
         },
+
         getTotalCost() {
             this.orderDetails.productDetails.totalCost = this.getTotalCost
+        },
+
+        updateProductShipping() {
+            if (this.updateProductShipping === "Free") {
+                this.updateProductShippingFee = 0.00
+            } else {
+                this.updateProductShippingFee = this.product.delivery.shippingFee
+            }
         }
+
     },
     methods: {
+
+        fetchOneProduct() {
+
+            this.$store.state.isLoading = true
+
+            ProductDataService.fetchOne(this.routeParams)
+            .then((res) => {
+                this.product = res.data 
+                this.orderDetails.productDetails.productName = res.data.details.productName
+                this.orderDetails.productDetails.productImage = res.data.details.imageSrc
+                this.orderDetails.productDetails.price = res.data.details.price
+                this.orderDetails.productDetails.shippingFee = res.data.delivery.shippingFee
+                this.category = res.data.details.category
+                this.getRelatedProducts()
+
+                // fix values for updating form
+                this.updateProductName = res.data.details.productName
+                this.updateProductPrice = res.data.details.price
+                this.updateQuantity = res.data.details.quantity
+                this.updateProductCategory = res.data.details.category
+                this.updateProductDescription = res.data.details.description
+                this.updateProductShipping = res.data.delivery.shipping,
+                this.updateProductShippingFee = res.data.delivery.shippingFee
+                console.log(res.data)
+                this.$store.state.isLoading = false
+               
+            })
+            .catch((err) => {
+                console.log(err)
+                 this.$store.state.isLoading = false
+                 this.$store.state.errorSnackbar = true
+            })
+        },
     
         addToCart() {
-             // push token to cartToken array
+
+            // push token to cartToken array
             this.$store.state.cartTokens.push(this.$route.params.id)
+
             // save array in local storage
             localStorage.setItem("cartTokens", JSON.stringify(this.$store.state.cartTokens))
 
             this.$store.state.cartSnackbar = true;
+          
         },
 
         getRelatedProducts() {
@@ -418,6 +613,11 @@ export default {
 
         deleteProduct() {
             // delete product from the database after it's quantity has been exhausted
+            /**
+             * Both deleteProduct and deleteItem do the same thing
+             * 
+             * But while deleproduct does provide a prompt to the user, deleteItem provides a prompt to the user
+             */
             ProductDataService.delete(this.$route.params.id)
             .then((res) => {
                 console.log("Item was deleted because it was exhausted from the store")
@@ -481,10 +681,39 @@ export default {
 
                     // after a successful order, update the quantity of the product in db
                     this.updateProductQuantity()
+
+                    // Display the updated version of the product
+                    this.fetchOneProduct()
+
+                    // Close the dialog box
+                    this.dialog = false
+
+                    // Set placeOrderDialog to false so that it does not open up the form again except if the user is coming from the cart page
+                    this.$store.state.placeOrderDialog = false
+
+                    // check if the product was in cart
+
+                    // if it is there, remove it from cart
+
+                    const cartTokens = JSON.parse(localStorage.getItem("cartTokens"))
+
+                    if(cartTokens.indexOf(this.$route.params.id) > -1 ) {
+                        cartTokens.splice(cartTokens.indexOf(this.$route.params.id), 1)
+
+                        // reset state.cartTokens to the new cartToken in local storage
+
+                        this.$store.state.cartTokens = cartTokens
+
+                        // save array in local storage
+                        localStorage.setItem("cartTokens", JSON.stringify(this.$store.state.cartTokens))
+                    }
                 })
                 .catch((err) => {
                     console.log(err)
                     this.loadingContent = false
+                    this.dialog = false
+                    this.$store.state.placeOrderDialog = false
+                    this.errorSnackbar = true
                 })
             }
           
@@ -492,6 +721,7 @@ export default {
 
         submitReview() {
             if(this.$refs.reviewForm.validate()) {
+
                 this.loadingContent = true
 
                 ReviewsDataService.store({
@@ -505,31 +735,127 @@ export default {
                     console.log(res.data)
                     this.loadingContent = false;
                     this.reviewSnackbar = true
+                    this.reviewDialog = false
+                    
+                    // fetch the product again so that it will be updated with the review
+                    this.fetchOneProduct()
                 })
                 .catch((err) => {
                     console.log(err)
                     this.loadingContent = false
+                    this.reviewDialog = false
                 })
             }
+        },
+
+        deleteItem() {
+
+            /**
+             * Both deleteProduct and deleteItem do the same thing
+             * 
+             * But while deleproduct does provide a prompt to the user, deleteItem provides a prompt to the user
+             */
+
+            if( confirm("Are you sure you want to delete this product?") ) {
+                ProductDataService.delete(this.$route.params.id)
+                .then((res) => {
+                console.log(res)
+                this.$store.dispatch('aFetchProducts')
+                this.deleteSnackbar = true
+                })
+                .catch((err) => {
+                console.log(err)
+                })
+            }
+     
+        },
+
+        updateItem () {
+
+             ProductDataService.update(this.$route.params.id, {
+                productName: this.product.details.productName,
+                price: this.product.details.price,
+                category: this.product.details.category,
+                // update the quantity of the item in store
+                quantity: this.product.details.quantity,
+                description: this.product.details.description,
+                shipping: this.product.delivery.shipping,
+                shippingFee: this.product.delivery.shippingFee,
+                imageSrc: this.product.details.imageSrc
+            })
+            .then((res) => {
+                console.log(res.data)
+                this.fetchOneProduct()
+            })
+            .catch((err) => {
+                console.log(err)
+            })
+        },
+
+        handleFileUpload() {
+            const image = document.querySelector("#file")
+            this.file = image.files[0]
+            console.log(this.file)
+        },
+
+        update() {
+
+            if(this.$refs.updateForm.validate()) {
+
+                this.loadingContent = true;
+
+                const formData = new FormData()
+
+                if (this.file !== "" ) {
+                    formData.append("image", this.file)
+                }
+                        
+                formData.set("productName", this.updateProductName)
+                formData.set("price", this.updateProductPrice)
+                formData.set("quantity", this.updateQuantity)
+                formData.set("description", this.updateProductDescription)
+                formData.set("category", this.updateProductCategory)
+                formData.set("shipping", this.updateProductShipping)
+                formData.set("shippingFee", this.updateProductShippingFee)
+                formData.set("imageSrc", this.product.details.imageSrc)
+
+                ProductDataService.update(this.$route.params.id, formData)
+                .then((res) => {
+                    this.loadingContent = false;
+                    this.createSnackbar = true
+                    this.updateDialog = false
+                    this.updateSnackbar = true
+                    this.fetchOneProduct()
+                    console.log(res.data)
+                })
+                .catch((err) => {
+                    console.log(err)
+                    this.loadingContent = false;
+                    this.errorSnackbar = true
+                    this.updateDialog = false
+                })
+            }
+        },
+
+        viewProduct(id) {
+            this.$router.push(`/product/${id}`, () => {
+                window.scrollTo(0, 0)
+            })
+    
         }
     },
     mounted() {
-        
-        ProductDataService.fetchOne(this.routeParams)
-        .then((res) => {
-            this.product = res.data 
-            this.orderDetails.productDetails.productName = res.data.details.productName
-            this.orderDetails.productDetails.productImage = res.data.details.imageSrc
-            this.orderDetails.productDetails.price = res.data.details.price
-            this.orderDetails.productDetails.shippingFee = res.data.delivery.shippingFee
-            this.category = res.data.details.category
-            this.getRelatedProducts()
-            console.log(res.data)
-        })
-        .catch((err) => {
-            console.log(err)
-        })
+        this.fetchOneProduct()
 
+        /**
+         * If the user lands on this page after having clicked "place order" on the cart page,
+         * 
+         * Then the code below automatically opens the dialog box that contains the form to place an order
+         */
+
+        if(this.$store.state.placeOrderDialog === true) {
+            this.dialog = true
+        }
     }
 }
 </script>
@@ -537,47 +863,72 @@ export default {
 <style scoped>
     .product-grid-container {
         display: grid;
-        grid-template-columns: 400px auto;
+        grid-template-columns: 2fr 3fr;
         column-gap: 50px;
         justify-content: space-around;
     }
+    
     .product-image {
         width: 100%; 
         object-fit: contain;
     }
+
     .flex-items {
         display: flex;
         justify-content: space-between;
     }
+
     .product-images {
         width: 100%; 
         height: 100%;
         object-fit: fit;
     }
+
     .flex-actions {
         display: flex;
         justify-content: space-between;
     }
+
     .flex-products {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-items: center;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
   }
+
   .flex-products .flex-product-items {
     margin: 10px 10px;
   }
+
   .flex-sub-items {
     display: flex;
     justify-content: space-between;
+  }
+
+  .flex-product-items:hover {
+    box-shadow: 10px 7px 17px 2px rgba(0,0,0,0.22)
+  }
+
+  .loader-container {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .loader-container > div {
+    margin: 10px;
   }
 
   @media (max-width: 500px) {
     .flex-actions {
         display: block;
     }
-    .flex-actions > div {
+    .flex-actions div {
         margin-bottom: 20px;
+        width: 100%;
+    }
+    .flex-actions button {
+        width: 100%;
     }
   }
   @media (max-width: 886px) {

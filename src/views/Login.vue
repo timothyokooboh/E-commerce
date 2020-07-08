@@ -7,8 +7,6 @@
             </v-snackbar>
 
             <v-card :elevation="5">
-
-                <div> {{$store.state.errorMessage}} </div>
                 
                 <v-card-title class="my-5"> Login </v-card-title>
 

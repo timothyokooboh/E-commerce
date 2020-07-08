@@ -4,10 +4,12 @@
         <v-snackbar top :timeout = "6000" v-model = "createSnackbar">
             Product uploaded successfully
         </v-snackbar>
+
+        <v-snackbar top :timeout = "6000" v-model = "errorSnackbar">
+            Something went wrong. Please try again.
+        </v-snackbar>
         
         <v-container>
-
-            <div> {{$store.state.errorMessage}} </div>
             
             <v-dialog v-model="dialog">
                 <template v-slot:activator="{on}">
@@ -201,10 +203,10 @@ export default {
             items: ["Free", "Paid"],
             loadingContent: false,
             storeRules: [
-                v => !!v || "Product name is required"
+                v => !!v || "This field is required"
             ],
             storeNumberRules: [
-                v => !!v || "Product name is required",
+                v => !!v || "This field is required",
                 v => v > 0 || "Value must be greater than zero"
             ],
 
@@ -261,7 +263,8 @@ export default {
 
             openOrders: [],
             closedOrders: [],
-            editDialog: false
+            editDialog: false,
+            errorSnackbar: false
                 
         }
     },
@@ -295,11 +298,13 @@ export default {
             .then((res) => {
                 this.loadingContent = false;
                 this.createSnackbar = true
+                this.dialog = false
             })
             .catch((err) => {
                 console.log(err)
                 this.loadingContent = false;
-                this.$store.state.errorMessage = err
+                this.errorSnackbar = true
+                this.dialog = false
             })
 
         },
@@ -376,7 +381,7 @@ export default {
 <style scoped>
     #dialog-btn {
         position: fixed;
-        bottom: 50px;
+        bottom: 100px;
         right: 10px;
     }
     

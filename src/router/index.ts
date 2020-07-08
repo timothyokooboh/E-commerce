@@ -21,7 +21,7 @@ Vue.use(VueRouter)
   },
 
   {
-    path: '/product/cart',
+    path: '/products/cart',
     name: 'Cart',
     // route level code-splitting
     // this generates a separate chunk (Cart.[hash].js) for this route

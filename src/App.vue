@@ -59,6 +59,7 @@ export default Vue.extend({
 
   body {
     -ms-overflow-style: none;
+    font-family: 'Lato', sans-serif;
   }
 
   .v-main__wrap {
