@@ -43,7 +43,6 @@ export default new Vuex.Store({
      
       axios.post("api/user/register", data)
       .then((res) => {
-        console.log(res)
         state.loadingContent = false
         state.successSnackbar = true
       })
@@ -64,8 +63,6 @@ export default new Vuex.Store({
 
       axios.post("api/user/login", data)
       .then((res) => {
-        console.log(res)
-        console.log("YOU ARE LOGGED IN")
         state.userToken = res.data.userToken
         state.isAuth = true
 
