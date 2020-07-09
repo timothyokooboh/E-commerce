@@ -41,7 +41,7 @@ export default new Vuex.Store({
         password: state.password,
       }
      
-      axios.post("http://localhost:3000/api/user/register", data)
+      axios.post("api/user/register", data)
       .then((res) => {
         console.log(res)
         state.loadingContent = false
@@ -62,7 +62,7 @@ export default new Vuex.Store({
         password: state.password
       }
 
-      axios.post("http://localhost:3000/api/user/login", data)
+      axios.post("api/user/login", data)
       .then((res) => {
         console.log(res)
         console.log("YOU ARE LOGGED IN")

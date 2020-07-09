@@ -14,7 +14,7 @@
 
             <div class="pa-5"> {{$store.state.errorMessage}} </div>
 
-                <v-card-title class="my-5"> Create Accountss </v-card-title>
+                <v-card-title class="my-5"> Create Account </v-card-title>
 
                 <v-form ref="form" class="mx-5">
                     <v-text-field
